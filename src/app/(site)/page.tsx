@@ -199,7 +199,7 @@ function Featured({ featured }: { featured: Category[] }) {
           return (
             <Link
               key={cat.slug}
-              href={`/catalogue#${cat.slug}`}
+              href={`/catalogue/${cat.slug}`}
               className="card group overflow-hidden flex flex-col"
             >
               <div className={`aspect-[4/3] relative grain overflow-hidden ${cat.image_url ? "" : meshFor(cat.slug)}`}>

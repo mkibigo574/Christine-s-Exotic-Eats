@@ -27,8 +27,8 @@ export default async function CataloguePage() {
             <Ornament />
           </div>
           <p className="mt-6 mx-auto max-w-2xl text-[var(--color-ink-soft)] text-lg leading-relaxed">
-            All prices below are exclusive of GST. Custom orders are available
-            on request — describe what you have in mind on the inquiry form.
+            All prices below are exclusive of GST. Tap any box to see all sizes
+            available, or describe a custom order on the inquiry form.
           </p>
           <div className="mt-12 grid gap-3 md:grid-cols-3 max-w-3xl mx-auto">
             {Object.entries(FEEDING_ESTIMATES).map(([size, serves]) => (
@@ -46,93 +46,73 @@ export default async function CataloguePage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-5xl px-6 py-24">
-        <section className="grid gap-16">
-          {CATEGORIES.map((cat, i) => (
-            <article key={cat.slug} id={cat.slug} className="scroll-mt-24">
-              <div className={`grid gap-8 md:grid-cols-[300px_1fr] items-start ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
+      <div className="mx-auto max-w-6xl px-6 py-20">
+        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {CATEGORIES.map((cat, i) => {
+            const from = cat.sizes.length
+              ? Math.min(...cat.sizes.map((s) => s.price))
+              : null;
+            const sizeCount = cat.sizes.length;
+            return (
+              <Link
+                key={cat.slug}
+                href={`/catalogue/${cat.slug}`}
+                className="card group overflow-hidden flex flex-col hover:-translate-y-0.5 transition"
+              >
                 <div
-                  className={`aspect-[4/5] rounded-3xl border border-[var(--color-line-strong)] grain relative overflow-hidden shadow-[var(--shadow-soft)] ${cat.image_url ? "" : meshFor(cat.slug)}`}
+                  className={`aspect-[4/3] relative grain overflow-hidden ${cat.image_url ? "" : meshFor(cat.slug)}`}
                 >
                   {cat.image_url ? (
                     <Image
                       src={cat.image_url}
                       alt={cat.image_alt ?? cat.name}
                       fill
-                      sizes="(min-width: 768px) 300px, 90vw"
-                      quality={95}
+                      sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 90vw"
                       className="object-cover"
-                      priority={i < 2}
+                      priority={i < 3}
                     />
                   ) : (
                     <div className="absolute inset-0 grid place-items-center text-overline !text-[var(--color-wine-deep)]">
                       {cat.name}
                     </div>
                   )}
-                  <div className="absolute top-3 left-3 font-accent italic text-3xl text-[var(--color-wine-deep)]/80 drop-shadow-[0_1px_2px_rgba(255,255,255,0.6)]">
+                  <div className="absolute top-3 left-3 font-accent italic text-2xl text-[var(--color-wine-deep)]/80 drop-shadow-[0_1px_2px_rgba(255,255,255,0.6)]">
                     {String(i + 1).padStart(2, "0")}
                   </div>
                 </div>
-
-                <div>
-                  <h2 className="font-display heading-md font-semibold text-[var(--color-wine-deep)]">
+                <div className="p-6 flex-1 flex flex-col">
+                  <h2 className="font-display text-xl font-semibold text-[var(--color-wine-dark)] group-hover:text-[var(--color-wine)] transition">
                     {cat.name}
                   </h2>
-                  <p className="mt-2 text-[var(--color-ink-soft)] text-lg italic font-display">
+                  <p className="mt-1.5 text-sm text-[var(--color-muted)] line-clamp-2">
                     {cat.blurb}
                   </p>
-
-                  <ul className="mt-7 space-y-1">
-                    {cat.sizes.map((size) => (
-                      <li key={size.label}>
-                        <div className="flex items-end gap-3 py-2.5">
-                          <div className="shrink-0">
-                            <span className="font-display text-lg text-[var(--color-ink)]">
-                              {size.label}
-                            </span>
-                            {size.unit ? (
-                              <span className="text-[var(--color-muted)] text-sm font-normal">
-                                {" "}({size.unit})
-                              </span>
-                            ) : null}
-                          </div>
-                          <div className="flex-1 leader h-3 mx-1 mb-1 opacity-70" />
-                          <div className="shrink-0 text-right">
-                            <span className="font-display text-xl text-[var(--color-wine-dark)]">
-                              {formatPrice(size.price)}
-                            </span>
-                            <span className="ml-1 text-[10px] uppercase tracking-[0.18em] text-[var(--color-muted)]">
-                              ex GST
-                            </span>
-                          </div>
-                        </div>
-                        {size.notes ? (
-                          <p className="text-sm text-[var(--color-muted)] -mt-1 mb-2 max-w-md italic">
-                            {size.notes}
-                          </p>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {cat.notes ? (
-                    <p className="mt-3 text-sm italic text-[var(--color-muted)]">
-                      {cat.notes}
-                    </p>
-                  ) : null}
-
-                  <div className="mt-7">
-                    <Link
-                      href={`/inquire?box=${cat.slug}`}
-                      className="btn-ghost"
-                    >
-                      Inquire about {cat.name}
-                    </Link>
+                  <div className="mt-auto pt-5 flex items-baseline justify-between gap-3">
+                    {from !== null ? (
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-overline">From</span>
+                        <span className="font-display text-xl text-[var(--color-wine-dark)]">
+                          {formatPrice(from)}
+                        </span>
+                        <span className="text-xs text-[var(--color-muted)]">excl. GST</span>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-[var(--color-muted)] italic">
+                        Price on request
+                      </span>
+                    )}
+                    {sizeCount > 1 ? (
+                      <span className="text-xs text-[var(--color-muted)]">
+                        {sizeCount} sizes →
+                      </span>
+                    ) : (
+                      <span className="text-xs text-[var(--color-muted)]">View →</span>
+                    )}
                   </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </Link>
+            );
+          })}
         </section>
 
         <section className="mt-24">

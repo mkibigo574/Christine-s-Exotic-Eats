@@ -6,6 +6,9 @@ export type Size = {
   serves?: string | null;
   notes?: string | null;
   sort_order?: number;
+  image_path?: string | null;
+  image_alt?: string | null;
+  image_url?: string | null;
 };
 
 export type Category = {
