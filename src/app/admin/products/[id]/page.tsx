@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ProductForm } from "../ProductForm";
 import { updateProduct } from "../actions";
-import type { Category } from "@/lib/content";
+import { GALLERY_BUCKET, type Category } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +17,15 @@ export default async function EditProductPage({
   const { data } = await supabase
     .from("cee_products")
     .select(
-      "id, slug, name, blurb, notes, is_active, sort_order, cee_product_sizes(id, label, price, unit, serves, notes, sort_order)",
+      "id, slug, name, blurb, notes, is_active, sort_order, image_path, image_alt, cee_product_sizes(id, label, price, unit, serves, notes, sort_order)",
     )
     .eq("id", id)
     .single();
   if (!data) notFound();
+
+  const image_url = data.image_path
+    ? supabase.storage.from(GALLERY_BUCKET).getPublicUrl(data.image_path).data.publicUrl
+    : null;
 
   const initial: Category = {
     id: data.id,
@@ -31,6 +35,9 @@ export default async function EditProductPage({
     notes: data.notes,
     is_active: data.is_active,
     sort_order: data.sort_order,
+    image_path: data.image_path,
+    image_alt: data.image_alt,
+    image_url,
     sizes: (data.cee_product_sizes ?? [])
       .slice()
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))

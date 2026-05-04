@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { GALLERY_BUCKET } from "@/lib/content-types";
 
 async function requireUser() {
   const supabase = await createSupabaseServerClient();
@@ -11,6 +13,33 @@ async function requireUser() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
   return supabase;
+}
+
+function safeName(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/\.[^.]+$/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "image";
+}
+
+async function uploadProductImage(file: File): Promise<string> {
+  const ext = file.name.includes(".") ? file.name.split(".").pop()!.toLowerCase() : "jpg";
+  const path = `products/${Date.now()}-${safeName(file.name)}.${ext}`;
+  const admin = createSupabaseAdminClient();
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const { error } = await admin.storage
+    .from(GALLERY_BUCKET)
+    .upload(path, buffer, { contentType: file.type, upsert: false });
+  if (error) throw new Error(error.message);
+  return path;
+}
+
+async function deleteStoredImage(path: string | null | undefined) {
+  if (!path) return;
+  const admin = createSupabaseAdminClient();
+  await admin.storage.from(GALLERY_BUCKET).remove([path]);
 }
 
 function slugify(input: string) {
@@ -62,13 +91,32 @@ export async function createProduct(formData: FormData) {
   const blurb = String(formData.get("blurb") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim() || null;
   const sortOrder = Number(formData.get("sort_order") ?? 0) || 0;
+  const imageAlt = String(formData.get("image_alt") ?? "").trim() || null;
+
+  const file = formData.get("image") as File | null;
+  let imagePath: string | null = null;
+  if (file && file.size > 0) {
+    imagePath = await uploadProductImage(file);
+  }
 
   const { data: product, error } = await supabase
     .from("cee_products")
-    .insert({ slug, name, blurb, notes, sort_order: sortOrder, is_active: true })
+    .insert({
+      slug,
+      name,
+      blurb,
+      notes,
+      sort_order: sortOrder,
+      is_active: true,
+      image_path: imagePath,
+      image_alt: imageAlt,
+    })
     .select("id")
     .single();
-  if (error || !product) throw new Error(error?.message ?? "Could not create product");
+  if (error || !product) {
+    if (imagePath) await deleteStoredImage(imagePath);
+    throw new Error(error?.message ?? "Could not create product");
+  }
 
   const sizes = parseSizes(formData);
   if (sizes.length > 0) {
@@ -91,13 +139,49 @@ export async function updateProduct(productId: string, formData: FormData) {
   const notes = String(formData.get("notes") ?? "").trim() || null;
   const isActive = formData.get("is_active") === "on";
   const sortOrder = Number(formData.get("sort_order") ?? 0) || 0;
+  const imageAlt = String(formData.get("image_alt") ?? "").trim() || null;
+  const removeImage = formData.get("remove_image") === "on";
   if (!name || !slug) throw new Error("Name and slug are required");
+
+  const { data: existing } = await supabase
+    .from("cee_products")
+    .select("image_path")
+    .eq("id", productId)
+    .single();
+  const previousPath = existing?.image_path as string | null | undefined;
+
+  const file = formData.get("image") as File | null;
+  let nextPath: string | null | undefined = undefined; // undefined = keep existing
+  if (file && file.size > 0) {
+    nextPath = await uploadProductImage(file);
+  } else if (removeImage) {
+    nextPath = null;
+  }
+
+  const update: Record<string, unknown> = {
+    name,
+    slug,
+    blurb,
+    notes,
+    is_active: isActive,
+    sort_order: sortOrder,
+    image_alt: imageAlt,
+  };
+  if (nextPath !== undefined) update.image_path = nextPath;
 
   const { error } = await supabase
     .from("cee_products")
-    .update({ name, slug, blurb, notes, is_active: isActive, sort_order: sortOrder })
+    .update(update)
     .eq("id", productId);
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (typeof nextPath === "string") await deleteStoredImage(nextPath);
+    throw new Error(error.message);
+  }
+
+  // If image was replaced or removed, drop the old file
+  if (nextPath !== undefined && previousPath && previousPath !== nextPath) {
+    await deleteStoredImage(previousPath);
+  }
 
   const sizes = parseSizes(formData);
   // Replace strategy: delete all and re-insert. Simpler than diffing for this scale.
@@ -116,8 +200,14 @@ export async function updateProduct(productId: string, formData: FormData) {
 
 export async function deleteProduct(productId: string) {
   const supabase = await requireUser();
+  const { data: existing } = await supabase
+    .from("cee_products")
+    .select("image_path")
+    .eq("id", productId)
+    .single();
   const { error } = await supabase.from("cee_products").delete().eq("id", productId);
   if (error) throw new Error(error.message);
+  if (existing?.image_path) await deleteStoredImage(existing.image_path);
   revalidatePath("/admin/products");
   revalidatePath("/catalogue");
   revalidatePath("/");

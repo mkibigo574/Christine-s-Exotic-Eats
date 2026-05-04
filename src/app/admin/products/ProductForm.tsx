@@ -13,6 +13,9 @@ export function ProductForm({ action, initial, submitLabel }: Props) {
   const [sizes, setSizes] = useState<Size[]>(
     initial?.sizes ?? [{ label: "", price: 0 }],
   );
+  const [preview, setPreview] = useState<string | null>(initial?.image_url ?? null);
+  const [removeImage, setRemoveImage] = useState(false);
+  const hasInitialImage = Boolean(initial?.image_url);
 
   function update(i: number, key: keyof Size, value: string | number) {
     setSizes((arr) => arr.map((s, idx) => (idx === i ? { ...s, [key]: value } : s)));
@@ -24,8 +27,15 @@ export function ProductForm({ action, initial, submitLabel }: Props) {
     setSizes((arr) => arr.filter((_, idx) => idx !== i));
   }
 
+  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setRemoveImage(false);
+    setPreview(URL.createObjectURL(file));
+  }
+
   return (
-    <form action={action} className="grid gap-6">
+    <form action={action} encType="multipart/form-data" className="grid gap-6">
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Name" name="name" defaultValue={initial?.name} required />
         <Field label="Slug (URL part)" name="slug" defaultValue={initial?.slug} placeholder="auto from name" />
@@ -46,6 +56,57 @@ export function ProductForm({ action, initial, submitLabel }: Props) {
           className="input resize-y"
         />
       </label>
+
+      <div className="grid gap-3">
+        <span className="text-overline">Product image</span>
+        <p className="text-xs text-[var(--color-muted)] -mt-1 max-w-xl leading-relaxed">
+          Upload the largest, sharpest photo you have — JPEG, PNG or WebP, ideally 2000px wide or larger. The site renders responsive AVIF/WebP automatically and never up-scales.
+        </p>
+        <div className="grid gap-4 md:grid-cols-[200px_1fr] items-start">
+          <div className="aspect-[4/5] w-full rounded-2xl border border-[var(--color-line)] bg-[var(--color-cream-soft)] overflow-hidden grid place-items-center">
+            {preview && !removeImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={preview} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-xs text-[var(--color-muted)] text-center px-3">
+                No image selected
+              </span>
+            )}
+          </div>
+          <div className="grid gap-3">
+            <input
+              type="file"
+              name="image"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              onChange={onPick}
+              className="block text-sm file:mr-3 file:rounded-full file:border file:border-[var(--color-line)] file:bg-[var(--color-paper)] file:px-4 file:py-2 file:text-xs file:uppercase file:tracking-[0.18em] file:text-[var(--color-wine-dark)] hover:file:bg-[var(--color-cream-dark)]/40"
+            />
+            <Field
+              label="Image alt text"
+              name="image_alt"
+              defaultValue={initial?.image_alt ?? ""}
+              placeholder="Describe what's in the photo (for accessibility)."
+            />
+            {hasInitialImage ? (
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="remove_image"
+                  checked={removeImage}
+                  onChange={(e) => {
+                    setRemoveImage(e.target.checked);
+                    if (e.target.checked) setPreview(null);
+                    else setPreview(initial?.image_url ?? null);
+                  }}
+                  className="h-4 w-4"
+                />
+                <span>Remove the current image</span>
+              </label>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-[120px_auto] md:items-center">
         <Field label="Sort order" name="sort_order" type="number" defaultValue={String(initial?.sort_order ?? 0)} />
         <label className="inline-flex items-center gap-2 text-sm pt-6">

@@ -1,6 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { formatPrice } from "@/lib/content";
+import { formatPrice, GALLERY_BUCKET } from "@/lib/content";
 import { DeleteProductButton } from "./DeleteProductButton";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export default async function ProductsAdminPage() {
   const { data: products } = await supabase
     .from("cee_products")
     .select(
-      "id, slug, name, blurb, is_active, sort_order, cee_product_sizes(label, price, sort_order)",
+      "id, slug, name, blurb, is_active, sort_order, image_path, image_alt, cee_product_sizes(label, price, sort_order)",
     )
     .order("sort_order", { ascending: true });
 
@@ -32,8 +33,25 @@ export default async function ProductsAdminPage() {
             .slice()
             .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
           const min = sizes.length > 0 ? Math.min(...sizes.map((s) => Number(s.price))) : null;
+          const imageUrl = p.image_path
+            ? supabase.storage.from(GALLERY_BUCKET).getPublicUrl(p.image_path).data.publicUrl
+            : null;
           return (
-            <div key={p.id} className="p-5 flex flex-wrap items-center justify-between gap-4">
+            <div key={p.id} className="p-5 flex flex-wrap items-center gap-4">
+              <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden border border-[var(--color-line)] bg-[var(--color-cream-soft)] grid place-items-center">
+                {imageUrl ? (
+                  <Image
+                    src={imageUrl}
+                    alt=""
+                    width={64}
+                    height={64}
+                    quality={90}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-[9px] uppercase tracking-[0.16em] text-[var(--color-muted)]">No image</span>
+                )}
+              </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h2 className="font-display text-xl text-[var(--color-wine-dark)]">{p.name}</h2>

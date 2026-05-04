@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getCategories, getReviews, formatPrice, type Category, type Review } from "@/lib/content";
 import { meshFor } from "@/lib/theme";
 import { Ornament, Mark } from "@/components/Ornament";
@@ -201,10 +202,21 @@ function Featured({ featured }: { featured: Category[] }) {
               href={`/catalogue#${cat.slug}`}
               className="card group overflow-hidden flex flex-col"
             >
-              <div className={`aspect-[4/3] relative grain ${meshFor(cat.slug)}`}>
-                <div className="absolute inset-0 grid place-items-center text-overline !text-[var(--color-wine-deep)]">
-                  Photo
-                </div>
+              <div className={`aspect-[4/3] relative grain overflow-hidden ${cat.image_url ? "" : meshFor(cat.slug)}`}>
+                {cat.image_url ? (
+                  <Image
+                    src={cat.image_url}
+                    alt={cat.image_alt ?? cat.name}
+                    fill
+                    sizes="(min-width: 1024px) 280px, (min-width: 640px) 45vw, 90vw"
+                    quality={90}
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 grid place-items-center text-overline !text-[var(--color-wine-deep)]">
+                    Photo
+                  </div>
+                )}
               </div>
               <div className="p-6 flex-1 flex flex-col">
                 <h3 className="font-display text-xl font-semibold text-[var(--color-wine-dark)] group-hover:text-[var(--color-wine)] transition">

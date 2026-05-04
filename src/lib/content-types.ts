@@ -17,6 +17,9 @@ export type Category = {
   sizes: Size[];
   is_active?: boolean;
   sort_order?: number;
+  image_path?: string | null;
+  image_alt?: string | null;
+  image_url?: string | null;
 };
 
 export type Review = {

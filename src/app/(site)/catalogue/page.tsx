@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { getCategories, DELIVERY, FEEDING_ESTIMATES, formatPrice } from "@/lib/content";
 import { meshFor } from "@/lib/theme";
@@ -51,12 +52,24 @@ export default async function CataloguePage() {
             <article key={cat.slug} id={cat.slug} className="scroll-mt-24">
               <div className={`grid gap-8 md:grid-cols-[300px_1fr] items-start ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
                 <div
-                  className={`aspect-[4/5] rounded-3xl border border-[var(--color-line-strong)] grain relative overflow-hidden shadow-[var(--shadow-soft)] ${meshFor(cat.slug)}`}
+                  className={`aspect-[4/5] rounded-3xl border border-[var(--color-line-strong)] grain relative overflow-hidden shadow-[var(--shadow-soft)] ${cat.image_url ? "" : meshFor(cat.slug)}`}
                 >
-                  <div className="absolute inset-0 grid place-items-center text-overline !text-[var(--color-wine-deep)]">
-                    {cat.name}
-                  </div>
-                  <div className="absolute top-3 left-3 font-accent italic text-3xl text-[var(--color-wine-deep)]/80">
+                  {cat.image_url ? (
+                    <Image
+                      src={cat.image_url}
+                      alt={cat.image_alt ?? cat.name}
+                      fill
+                      sizes="(min-width: 768px) 300px, 90vw"
+                      quality={95}
+                      className="object-cover"
+                      priority={i < 2}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 grid place-items-center text-overline !text-[var(--color-wine-deep)]">
+                      {cat.name}
+                    </div>
+                  )}
+                  <div className="absolute top-3 left-3 font-accent italic text-3xl text-[var(--color-wine-deep)]/80 drop-shadow-[0_1px_2px_rgba(255,255,255,0.6)]">
                     {String(i + 1).padStart(2, "0")}
                   </div>
                 </div>

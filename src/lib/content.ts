@@ -19,34 +19,42 @@ export async function getCategories(): Promise<Category[]> {
   const { data, error } = await supabase
     .from("cee_products")
     .select(
-      "id, slug, name, blurb, notes, sort_order, is_active, cee_product_sizes(id, label, price, unit, serves, notes, sort_order)",
+      "id, slug, name, blurb, notes, sort_order, is_active, image_path, image_alt, cee_product_sizes(id, label, price, unit, serves, notes, sort_order)",
     )
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
 
   if (error || !data) return [];
 
-  return data.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    blurb: p.blurb,
-    notes: p.notes,
-    is_active: p.is_active,
-    sort_order: p.sort_order,
-    sizes: (p.cee_product_sizes ?? [])
-      .slice()
-      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-      .map((s) => ({
-        id: s.id,
-        label: s.label,
-        price: Number(s.price),
-        unit: s.unit,
-        serves: s.serves,
-        notes: s.notes,
-        sort_order: s.sort_order,
-      })),
-  }));
+  return data.map((p) => {
+    const image_url = p.image_path
+      ? supabase.storage.from(GALLERY_BUCKET).getPublicUrl(p.image_path).data.publicUrl
+      : null;
+    return {
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      blurb: p.blurb,
+      notes: p.notes,
+      is_active: p.is_active,
+      sort_order: p.sort_order,
+      image_path: p.image_path,
+      image_alt: p.image_alt,
+      image_url,
+      sizes: (p.cee_product_sizes ?? [])
+        .slice()
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        .map((s) => ({
+          id: s.id,
+          label: s.label,
+          price: Number(s.price),
+          unit: s.unit,
+          serves: s.serves,
+          notes: s.notes,
+          sort_order: s.sort_order,
+        })),
+    };
+  });
 }
 
 export async function findCategory(slug: string): Promise<Category | null> {
