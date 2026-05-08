@@ -45,7 +45,7 @@ export async function sendReply(inquiryId: string, formData: FormData) {
   if (fetchError || !inquiry) throw new Error("Inquiry not found");
 
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM ?? "Christine's Exotic Eats <onboarding@resend.dev>";
+  const from = process.env.RESEND_FROM ?? "Christine's Exotic Eats <enquiries@christines-exoticeats.com.au>";
   const bcc = process.env.RESEND_BCC || undefined;
 
   if (!apiKey) {
