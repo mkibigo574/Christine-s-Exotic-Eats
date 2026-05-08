@@ -75,8 +75,7 @@ export async function sendReply(inquiryId: string, formData: FormData) {
     inquiry_id: inquiryId,
     body,
     subject,
-    to_email: inquiry.email,
-    sent_by_user_id: user.id,
+    sent_to: inquiry.email,
   });
   await supabase
     .from("cee_inquiries")
