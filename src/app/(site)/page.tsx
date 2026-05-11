@@ -83,21 +83,27 @@ function Stat({ label, value }: { label: string; value: string }) {
 function HeroVisual() {
   return (
     <div className="relative h-[560px] md:h-[620px]">
-      <div className="absolute inset-x-6 top-0 bottom-12 rounded-[2rem] mesh-grazing border border-[rgba(216,183,116,0.40)] grain overflow-hidden shadow-[var(--shadow-deep)]">
-        <div className="absolute inset-0 grid place-items-center text-center px-10">
-          <div>
-            <div className="text-overline !text-[var(--color-wine-deep)]">Hero photograph</div>
-            <p className="mt-3 font-display italic text-2xl text-[var(--color-wine-deep)]">
-              Replace with a signature box or styled spread.
-            </p>
-          </div>
-        </div>
+      <div className="absolute inset-x-6 top-0 bottom-12 rounded-[2rem] border border-[rgba(216,183,116,0.40)] overflow-hidden shadow-[var(--shadow-deep)]">
+        <Image
+          src="/landing/hero-grazing.jpg"
+          alt="An abundant grazing box of cured meats, cheeses, fruit, dips and breads"
+          fill
+          sizes="(min-width: 768px) 45vw, 100vw"
+          priority
+          quality={92}
+          className="object-cover"
+        />
       </div>
 
-      <div className="absolute right-0 top-12 w-44 h-44 md:w-56 md:h-56 rounded-2xl mesh-sweet border border-[rgba(216,183,116,0.45)] grain overflow-hidden rotate-[4deg] shadow-[var(--shadow-deep)]">
-        <div className="absolute inset-0 grid place-items-center text-overline !text-[var(--color-wine-deep)]">
-          Photo 02
-        </div>
+      <div className="absolute right-0 top-12 w-44 h-44 md:w-56 md:h-56 rounded-2xl border border-[rgba(216,183,116,0.45)] overflow-hidden rotate-[4deg] shadow-[var(--shadow-deep)]">
+        <Image
+          src="/landing/hero-dessert.jpg"
+          alt="A delicate chocolate mousse dessert"
+          fill
+          sizes="(min-width: 768px) 224px, 176px"
+          quality={92}
+          className="object-cover"
+        />
       </div>
 
       <div className="absolute -left-2 bottom-0 w-52 md:w-64 rounded-2xl bg-[var(--color-paper)] border border-[var(--color-line)] shadow-[var(--shadow-deep)] px-5 py-5 -rotate-[2deg]">
