@@ -11,7 +11,7 @@ import {
 import { meshFor } from "@/lib/theme";
 import { Ornament } from "@/components/Ornament";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 type Params = { slug: string };
 
@@ -53,23 +53,23 @@ export default async function CategoryDetailPage({
   return (
     <>
       <section className="band-warm relative grain-light">
-        <div className="mx-auto max-w-5xl px-6 py-16 fade-up">
+        <div className="mx-auto max-w-5xl px-5 sm:px-6 py-12 md:py-16 fade-up">
           <Link
             href="/catalogue"
             className="text-sm font-medium text-[var(--color-wine)] hover:text-[var(--color-wine-dark)] transition"
           >
             ← Back to catalogue
           </Link>
-          <div className="mt-6 grid gap-10 md:grid-cols-[260px_1fr] items-center">
+          <div className="mt-6 grid gap-6 md:gap-10 md:grid-cols-[260px_1fr] items-center">
             <div
-              className={`aspect-square w-[260px] max-w-full rounded-2xl border border-[var(--color-line-strong)] grain relative overflow-hidden shadow-[var(--shadow-soft)] ${cat.image_url ? "" : meshFor(cat.slug)}`}
+              className={`aspect-square w-full sm:w-[260px] max-w-full rounded-2xl border border-[var(--color-line-strong)] grain relative overflow-hidden shadow-[var(--shadow-soft)] ${cat.image_url ? "" : meshFor(cat.slug)}`}
             >
               {cat.image_url ? (
                 <Image
                   src={cat.image_url}
                   alt={cat.image_alt ?? cat.name}
                   fill
-                  sizes="260px"
+                  sizes="(min-width: 640px) 260px, 100vw"
                   className="object-cover"
                   priority
                 />
@@ -87,7 +87,7 @@ export default async function CategoryDetailPage({
               <div className="mt-4">
                 <Ornament />
               </div>
-              <p className="mt-5 text-[var(--color-ink-soft)] text-lg leading-relaxed">
+              <p className="mt-5 text-[var(--color-ink-soft)] text-base md:text-lg leading-relaxed">
                 {cat.blurb}
               </p>
               {cat.notes ? (
@@ -100,7 +100,7 @@ export default async function CategoryDetailPage({
                   href={`/inquire?box=${cat.slug}`}
                   className="btn-primary"
                 >
-                  Inquire about {cat.name}
+                  Enquire about {cat.name}
                 </Link>
               </div>
             </div>
@@ -108,14 +108,14 @@ export default async function CategoryDetailPage({
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-6 py-20">
+      <div className="mx-auto max-w-6xl px-5 sm:px-6 py-12 md:py-20">
         <div className="mb-10">
           <Ornament label={cat.sizes.length > 1 ? "Choose a size" : "Details"} />
         </div>
 
         {cat.sizes.length === 0 ? (
           <p className="text-center text-[var(--color-muted)] italic">
-            Pricing on request — please use the inquiry form.
+            Pricing on request — please use the enquiry form.
           </p>
         ) : (
           <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -177,7 +177,7 @@ export default async function CategoryDetailPage({
                         href={`/inquire?box=${cat.slug}&size=${encodeURIComponent(size.label)}`}
                         className="btn-ghost w-full text-center"
                       >
-                        Inquire about {size.label}
+                        Enquire about {size.label}
                       </Link>
                     </div>
                   </div>

@@ -16,7 +16,7 @@ export default function LoginPage() {
             Christine&rsquo;s Admin
           </h1>
           <p className="mt-3 text-sm text-[var(--color-muted)]">
-            Sign in to manage products, reviews, gallery, and inquiries.
+            Sign in to manage products, reviews, gallery, and enquiries.
           </p>
         </div>
         <LoginForm />

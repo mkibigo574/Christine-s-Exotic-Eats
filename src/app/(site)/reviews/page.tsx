@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getReviews } from "@/lib/content";
 import { Ornament, Mark } from "@/components/Ornament";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export const metadata: Metadata = {
   title: "Reviews",

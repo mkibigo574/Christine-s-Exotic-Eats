@@ -25,13 +25,13 @@ export default async function InquiryDetailPage({
   const { data } = await supabase
     .from("cee_inquiries")
     .select(
-      "id, name, email, phone, event_date, guests, delivery, address, notes, items, subtotal_ex_gst, status, created_at",
+      "id, name, email, phone, event_date, event_type, guests, delivery, delivery_time, address, notes, items, subtotal_ex_gst, status, created_at",
     )
     .eq("id", id)
     .single();
   if (!data) notFound();
 
-  // Auto-mark new inquiries as read on open
+  // Auto-mark new enquiries as read on open
   if (data.status === "new") {
     await supabase.from("cee_inquiries").update({ status: "read" }).eq("id", id);
   }
@@ -67,8 +67,10 @@ export default async function InquiryDetailPage({
 
         <section className="mt-6 card p-6 grid gap-3 text-sm">
           <Row label="Event date" value={data.event_date ?? "—"} />
+          <Row label="Event type" value={data.event_type ?? "—"} />
           <Row label="Guests" value={data.guests ? String(data.guests) : "—"} />
           <Row label="Delivery / pick-up" value={data.delivery ?? "—"} />
+          <Row label="Delivery / pick-up time" value={data.delivery_time ?? "—"} />
           <Row label="Address" value={data.address ?? "—"} />
         </section>
 
@@ -154,8 +156,8 @@ export default async function InquiryDetailPage({
           <div className="mt-4">
             <ReplyForm
               action={replyAction}
-              defaultSubject={`Re: Your inquiry — Christine's Exotic Eats`}
-              defaultBody={`Hi ${data.name.split(" ")[0]},\n\nThanks for your inquiry. `}
+              defaultSubject={`Re: Your enquiry — Christine's Exotic Eats`}
+              defaultBody={`Hi ${data.name.split(" ")[0]},\n\nThanks for your enquiry. `}
             />
           </div>
         </div>

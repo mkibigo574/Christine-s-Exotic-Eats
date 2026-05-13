@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { MobileMenu } from "./MobileMenu";
 
 const nav = [
   { href: "/catalogue", label: "Catalogue" },
@@ -11,7 +12,7 @@ const nav = [
 export function Header() {
   return (
     <header className="sticky top-0 z-30 glass border-b border-[var(--color-line)]">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 md:px-6 py-3 md:py-4">
         <Link href="/" className="hover:opacity-90 transition" aria-label="Christine's Exotic Eats — home">
           <Logo />
         </Link>
@@ -26,12 +27,10 @@ export function Header() {
             </Link>
           ))}
           <Link href="/inquire" className="btn-primary">
-            Send an inquiry
+            Send an enquiry
           </Link>
         </nav>
-        <Link href="/inquire" className="md:hidden btn-primary !px-4 !py-2 text-xs">
-          Inquire
-        </Link>
+        <MobileMenu items={nav} />
       </div>
     </header>
   );

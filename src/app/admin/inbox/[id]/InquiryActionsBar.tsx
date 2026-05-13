@@ -18,7 +18,7 @@ export function InquiryActionsBar({
     start(() => setStatus(id, "read"));
   }
   function remove() {
-    if (!confirm("Permanently delete this inquiry?")) return;
+    if (!confirm("Permanently delete this enquiry?")) return;
     start(() => deleteInquiry(id));
   }
   return (

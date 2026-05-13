@@ -381,15 +381,6 @@
     background-repeat: repeat-x;
   }
 
-  .drop-cap::first-letter {
-    font-family: var(--font-accent);
-    float: left;
-    font-size: 4.5em;
-    line-height: 0.85;
-    padding: 0.18em 0.12em 0 0;
-    color: var(--color-wine);
-  }
-
   .lift {
     transition: transform 280ms ease, box-shadow 280ms ease;
   }

@@ -19,7 +19,7 @@ export async function getCategories(): Promise<Category[]> {
   const { data, error } = await supabase
     .from("cee_products")
     .select(
-      "id, slug, name, blurb, notes, sort_order, is_active, image_path, image_alt, cee_product_sizes(id, label, price, unit, serves, notes, sort_order, image_path, image_alt)",
+      "id, slug, name, blurb, notes, sort_order, is_active, image_path, image_alt, cee_product_sizes(id, label, price, unit, serves, notes, sort_order, image_path, image_alt, min_qty)",
     )
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
@@ -57,6 +57,7 @@ export async function getCategories(): Promise<Category[]> {
           image_url: s.image_path
             ? supabase.storage.from(GALLERY_BUCKET).getPublicUrl(s.image_path).data.publicUrl
             : null,
+          min_qty: s.min_qty,
         })),
     };
   });

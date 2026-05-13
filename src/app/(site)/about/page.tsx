@@ -5,14 +5,14 @@ import { Ornament, Mark } from "@/components/Ornament";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Christine's Exotic Eats is a Darwin based, family owned & operated, small catering business, established in 2019.",
+    "Christine's Exotic Eats is a Darwin based, family owned & operated, small catering business, established in December 2021.",
 };
 
 export default function AboutPage() {
   return (
     <>
       <section className="band-warm relative grain-light">
-        <div className="mx-auto max-w-3xl px-6 py-20 text-center fade-up relative">
+        <div className="mx-auto max-w-3xl px-5 sm:px-6 py-14 md:py-20 text-center fade-up relative">
           <span className="text-overline">Our story</span>
           <h1 className="mt-3 font-display heading-lg font-semibold text-[var(--color-wine-deep)]">
             Family-run, Darwin-grown.
@@ -23,12 +23,12 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-3xl px-6 py-20">
-        <div className="text-lg leading-[1.85] text-[var(--color-ink)] font-display">
-          <p className="drop-cap">
+      <div className="mx-auto max-w-3xl px-5 sm:px-6 py-12 md:py-20">
+        <div className="text-base md:text-lg leading-[1.8] md:leading-[1.85] text-[var(--color-ink)] font-display">
+          <p>
             Christine&rsquo;s Exotic Eats is a Darwin based, family owned &amp;
             operated, small catering business, servicing both private and
-            corporate clients. Established in 2019, our small business has
+            corporate clients. Established in December 2021, our small business has
             seen significant growth over the years and endeavours to continue
             thriving and serving the amazing Darwin community.
           </p>
@@ -41,7 +41,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="mt-16 grid gap-4 md:grid-cols-3">
+        <div className="mt-12 md:mt-16 grid gap-3 md:gap-4 md:grid-cols-3">
           <ValueCard
             tint="from-[rgba(138,154,120,0.30)] to-[rgba(247,241,230,0.65)]"
             mark="var(--color-sage-deep)"
@@ -64,14 +64,14 @@ export default function AboutPage() {
       </div>
 
       <section className="mesh-deep-wine relative grain overflow-hidden">
-        <div className="mx-auto max-w-3xl px-6 py-20 text-center relative">
+        <div className="mx-auto max-w-3xl px-5 sm:px-6 py-14 md:py-20 text-center relative">
           <Mark className="mx-auto text-[var(--color-honey)]" />
           <div className="mt-4 text-overline !text-[var(--color-gold-light)]">Our promise</div>
           <p className="mt-3 font-accent italic text-3xl md:text-5xl text-[var(--color-cream-soft)]">
             Enlighten your tastebuds.
           </p>
           <Link href="/inquire" className="mt-10 btn-gold">
-            Send an inquiry
+            Send an enquiry
             <span aria-hidden>→</span>
           </Link>
         </div>

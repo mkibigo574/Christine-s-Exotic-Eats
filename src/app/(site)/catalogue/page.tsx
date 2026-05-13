@@ -5,7 +5,7 @@ import { getCategories, DELIVERY, FEEDING_ESTIMATES, formatPrice } from "@/lib/c
 import { meshFor } from "@/lib/theme";
 import { Ornament } from "@/components/Ornament";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export const metadata: Metadata = {
   title: "Catalogue",
@@ -18,7 +18,7 @@ export default async function CataloguePage() {
   return (
     <>
       <section className="band-warm relative grain-light">
-        <div className="mx-auto max-w-5xl px-6 py-20 text-center fade-up relative">
+        <div className="mx-auto max-w-5xl px-5 sm:px-6 py-14 md:py-20 text-center fade-up relative">
           <span className="text-overline">Vol. I · The boxed range</span>
           <h1 className="mt-3 font-display heading-lg font-semibold text-[var(--color-wine-deep)]">
             Catalogue
@@ -26,11 +26,11 @@ export default async function CataloguePage() {
           <div className="mt-5">
             <Ornament />
           </div>
-          <p className="mt-6 mx-auto max-w-2xl text-[var(--color-ink-soft)] text-lg leading-relaxed">
+          <p className="mt-5 md:mt-6 mx-auto max-w-2xl text-[var(--color-ink-soft)] text-base md:text-lg leading-relaxed">
             All prices below are exclusive of GST. Tap any box to see all sizes
-            available, or describe a custom order on the inquiry form.
+            available, or describe a custom order on the enquiry form.
           </p>
-          <div className="mt-12 grid gap-3 md:grid-cols-3 max-w-3xl mx-auto">
+          <div className="mt-8 md:mt-12 grid gap-3 md:grid-cols-3 max-w-3xl mx-auto">
             {Object.entries(FEEDING_ESTIMATES).map(([size, serves]) => (
               <div
                 key={size}
@@ -46,8 +46,8 @@ export default async function CataloguePage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-6 py-20">
-        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto max-w-6xl px-5 sm:px-6 py-12 md:py-20">
+        <section className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {CATEGORIES.map((cat, i) => {
             const from = cat.sizes.length
               ? Math.min(...cat.sizes.map((s) => s.price))
@@ -115,8 +115,8 @@ export default async function CataloguePage() {
           })}
         </section>
 
-        <section className="mt-24">
-          <div className="mb-10">
+        <section className="mt-16 md:mt-24">
+          <div className="mb-8 md:mb-10">
             <Ornament label="Delivery & pick-up" />
           </div>
           <div className="grid gap-3 md:grid-cols-3">

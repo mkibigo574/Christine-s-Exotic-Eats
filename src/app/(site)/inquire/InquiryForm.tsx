@@ -34,7 +34,8 @@ export function InquiryForm({
       const cat = categories.find((c) => c.slug === initialBox);
       if (cat && cat.sizes[0]) {
         const first = cat.sizes[0];
-        setSelection((s) => ({ ...s, [selectionKey(cat.slug, first.label)]: 1 }));
+        const startQty = first.min_qty && first.min_qty > 1 ? first.min_qty : 1;
+        setSelection((s) => ({ ...s, [selectionKey(cat.slug, first.label)]: startQty }));
       }
     }
   }, [initialBox, categories]);
@@ -62,7 +63,6 @@ export function InquiryForm({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setStatus("submitting");
     setError(null);
 
     const form = e.currentTarget;
@@ -82,15 +82,39 @@ export function InquiryForm({
       };
     });
 
+    const belowMin: { category: string; size: string; min: number }[] = [];
+    for (const [key, qty] of Object.entries(selection)) {
+      if (qty <= 0) continue;
+      const [slug, sizeLabel] = key.split("::");
+      const cat = categories.find((c) => c.slug === slug);
+      const size = cat?.sizes.find((s) => s.label === sizeLabel);
+      const min = size?.min_qty ?? 0;
+      if (min > 1 && qty < min) {
+        belowMin.push({ category: cat?.name ?? slug, size: sizeLabel, min });
+      }
+    }
+    if (belowMin.length > 0) {
+      const lines = belowMin
+        .map((b) => `${b.category} — ${b.size} (min ${b.min})`)
+        .join("; ");
+      setError(`Minimum order quantity not met for: ${lines}.`);
+      return;
+    }
+
+    setStatus("submitting");
+
     const payload = {
       name: data.get("name"),
       email: data.get("email"),
       phone: data.get("phone"),
       eventDate: data.get("eventDate"),
+      eventType: data.get("eventType"),
       guests: data.get("guests"),
       delivery: data.get("delivery"),
+      deliveryTime: data.get("deliveryTime"),
       address: data.get("address"),
       notes: data.get("notes"),
+      website: data.get("website"),
       items,
       subtotalExGst: subtotal,
     };
@@ -101,7 +125,10 @@ export function InquiryForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(`Server responded ${res.status}`);
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(body?.error ?? `Server responded ${res.status}`);
+      }
       setStatus("success");
       form.reset();
       setSelection({});
@@ -116,7 +143,7 @@ export function InquiryForm({
       <div className="mt-14 card p-10 text-center grain relative overflow-hidden">
         <Mark className="mx-auto text-[var(--color-gold)]" />
         <h2 className="mt-5 font-display heading-md text-[var(--color-wine-deep)]">
-          Thank you — your inquiry has been received.
+          Thank you — your enquiry has been received.
         </h2>
         <p className="mt-4 text-[var(--color-ink-soft)] max-w-lg mx-auto leading-relaxed">
           Christine will be in touch shortly to confirm availability. If your
@@ -127,14 +154,20 @@ export function InquiryForm({
           onClick={() => setStatus("idle")}
           className="mt-8 btn-ghost"
         >
-          Send another inquiry
+          Send another enquiry
         </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-14 grid gap-12">
+    <form onSubmit={handleSubmit} className="mt-10 md:mt-14 grid gap-10 md:gap-12">
+      <div aria-hidden style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}>
+        <label>
+          Website (leave blank)
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
       <Section title="Your details">
         <div className="grid gap-5 md:grid-cols-2">
           <Field label="Full name" name="name" required />
@@ -146,6 +179,11 @@ export function InquiryForm({
 
       <Section title="Event details">
         <div className="grid gap-5 md:grid-cols-2">
+          <Field
+            label="Event type"
+            name="eventType"
+            placeholder="e.g. Birthday, Wedding, Corporate lunch"
+          />
           <Field label="Approx. guest count" name="guests" type="number" min="1" />
           <SelectField label="Delivery / pick-up" name="delivery" required>
             <option value="">Select an option…</option>
@@ -156,6 +194,11 @@ export function InquiryForm({
               </option>
             ))}
           </SelectField>
+          <Field
+            label="Delivery / pick-up time"
+            name="deliveryTime"
+            type="time"
+          />
         </div>
         <Field
           label="Delivery address (if applicable)"
@@ -192,11 +235,18 @@ export function InquiryForm({
                       className="flex flex-wrap items-center justify-between gap-3 py-3 border-t border-[var(--color-line)] first:border-t-0"
                     >
                       <div className="flex-1 min-w-[200px]">
-                        <div className="font-display text-base text-[var(--color-ink)]">
-                          {size.label}
-                          {size.unit ? (
-                            <span className="text-[var(--color-muted)] font-sans text-sm font-normal">
-                              {" "}({size.unit})
+                        <div className="font-display text-base text-[var(--color-ink)] flex items-center gap-2 flex-wrap">
+                          <span>
+                            {size.label}
+                            {size.unit ? (
+                              <span className="text-[var(--color-muted)] font-sans text-sm font-normal">
+                                {" "}({size.unit})
+                              </span>
+                            ) : null}
+                          </span>
+                          {size.min_qty && size.min_qty > 1 ? (
+                            <span className="text-[10px] uppercase tracking-[0.18em] rounded-full px-2 py-0.5 bg-[var(--color-wine)]/12 text-[var(--color-wine-dark)]">
+                              Min {size.min_qty} per order
                             </span>
                           ) : null}
                         </div>
@@ -206,6 +256,7 @@ export function InquiryForm({
                       </div>
                       <QtyControl
                         value={qty}
+                        min={size.min_qty ?? 0}
                         onChange={(v) => setQty(cat.slug, size.label, v)}
                       />
                     </div>
@@ -247,7 +298,7 @@ export function InquiryForm({
 
       <div className="flex flex-wrap items-center justify-between gap-4 pt-4">
         <p className="text-xs text-[var(--color-muted)] max-w-md leading-relaxed">
-          By submitting, you&rsquo;re sending an inquiry — not placing a paid
+          By submitting, you&rsquo;re sending an enquiry — not placing a paid
           order. Christine will reply to confirm availability before any
           payment is requested.
         </p>
@@ -256,7 +307,7 @@ export function InquiryForm({
           disabled={status === "submitting"}
           className="btn-primary disabled:opacity-60"
         >
-          {status === "submitting" ? "Sending…" : "Send inquiry"}
+          {status === "submitting" ? "Sending…" : "Send enquiry"}
           <span aria-hidden>→</span>
         </button>
       </div>
@@ -351,27 +402,39 @@ function SelectField({
 function QtyControl({
   value,
   onChange,
+  min = 0,
 }: {
   value: number;
   onChange: (v: number) => void;
+  min?: number;
 }) {
+  const floor = min > 1 ? min : 1;
+  function handleIncrement() {
+    if (value === 0) onChange(floor);
+    else onChange(value + 1);
+  }
+  function handleDecrement() {
+    if (value <= 0) return;
+    if (min > 1 && value <= min) onChange(0);
+    else onChange(value - 1);
+  }
   return (
     <div className="inline-flex items-center rounded-full border border-[var(--color-line)] bg-[var(--color-paper)] shadow-[var(--shadow-soft)]">
       <button
         type="button"
-        onClick={() => onChange(Math.max(0, value - 1))}
-        className="w-9 h-9 grid place-items-center text-[var(--color-wine)] hover:bg-[var(--color-cream-dark)]/50 rounded-l-full"
+        onClick={handleDecrement}
+        className="w-11 h-11 grid place-items-center text-[var(--color-wine)] hover:bg-[var(--color-cream-dark)]/50 rounded-l-full text-lg"
         aria-label="Decrease quantity"
       >
         −
       </button>
-      <span className="w-9 text-center font-display text-lg tabular-nums text-[var(--color-wine-dark)]">
+      <span className="min-w-[2.5rem] text-center font-display text-lg tabular-nums text-[var(--color-wine-dark)]">
         {value}
       </span>
       <button
         type="button"
-        onClick={() => onChange(value + 1)}
-        className="w-9 h-9 grid place-items-center text-[var(--color-wine)] hover:bg-[var(--color-cream-dark)]/50 rounded-r-full"
+        onClick={handleIncrement}
+        className="w-11 h-11 grid place-items-center text-[var(--color-wine)] hover:bg-[var(--color-cream-dark)]/50 rounded-r-full text-lg"
         aria-label="Increase quantity"
       >
         +

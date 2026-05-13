@@ -42,7 +42,7 @@ export async function sendReply(inquiryId: string, formData: FormData) {
     .select("id, email, name")
     .eq("id", inquiryId)
     .single();
-  if (fetchError || !inquiry) throw new Error("Inquiry not found");
+  if (fetchError || !inquiry) throw new Error("Enquiry not found");
 
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM ?? "Christine's Exotic Eats <enquiries@christines-exoticeats.com.au>";
@@ -67,7 +67,7 @@ export async function sendReply(inquiryId: string, formData: FormData) {
     replyTo: bcc, // replies from the client come back to Christine
     subject,
     text: body,
-    html: `<div style="font-family:Georgia,serif;color:#2a1014;max-width:560px">${html}<hr style="border:none;border-top:1px solid #eee;margin:2em 0"/><p style="font-size:12px;color:#888">This message was sent in reply to your inquiry at Christine's Exotic Eats.</p></div>`,
+    html: `<div style="font-family:Georgia,serif;color:#2a1014;max-width:560px">${html}<hr style="border:none;border-top:1px solid #eee;margin:2em 0"/><p style="font-size:12px;color:#888">This message was sent in reply to your enquiry at Christine's Exotic Eats.</p></div>`,
   });
   if (sendError) throw new Error(sendError.message);
 

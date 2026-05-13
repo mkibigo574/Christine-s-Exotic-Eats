@@ -9,6 +9,7 @@ export type Size = {
   image_path?: string | null;
   image_alt?: string | null;
   image_url?: string | null;
+  min_qty?: number | null;
 };
 
 export type Category = {

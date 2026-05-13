@@ -78,7 +78,7 @@ export default async function AdminOverview() {
           </p>
         </div>
         <Link href="/admin/inbox?status=new" className="btn-primary">
-          Open new inquiries
+          Open new enquiries
         </Link>
       </header>
 
@@ -89,7 +89,7 @@ export default async function AdminOverview() {
       {/* Hero stats */}
       <section className="mt-6 grid gap-4 md:grid-cols-3">
         <StatHero
-          label="New inquiries"
+          label="New enquiries"
           value={String(newRes.count ?? 0)}
           hint={
             (newRes.count ?? 0) > 0
@@ -102,14 +102,14 @@ export default async function AdminOverview() {
         <StatHero
           label="This week"
           value={String(weekRes.count ?? 0)}
-          hint="Inquiries in the last 7 days"
+          hint="Enquiries in the last 7 days"
           href="/admin/inbox"
           tone="cream"
         />
         <StatHero
           label="Revenue (this month, ex GST)"
           value={AUD.format(monthRevenue)}
-          hint="Quoted total across inquiries"
+          hint="Quoted total across enquiries"
           href="/admin/inbox"
           tone="gold"
         />
@@ -120,7 +120,7 @@ export default async function AdminOverview() {
         <StatMini label="Products" count={productsRes.count ?? 0} href="/admin/products" />
         <StatMini label="Reviews" count={reviewsRes.count ?? 0} href="/admin/reviews" />
         <StatMini label="Gallery photos" count={galleryRes.count ?? 0} href="/admin/gallery" />
-        <StatMini label="All inquiries" count={inboxRes.count ?? 0} href="/admin/inbox" />
+        <StatMini label="All enquiries" count={inboxRes.count ?? 0} href="/admin/inbox" />
       </section>
 
       {/* Recent activity */}
@@ -129,7 +129,7 @@ export default async function AdminOverview() {
           <div>
             <div className="text-overline">Recent activity</div>
             <h2 className="font-display text-2xl text-[var(--color-wine-dark)] mt-1">
-              Latest inquiries
+              Latest enquiries
             </h2>
           </div>
           <Link
@@ -143,7 +143,7 @@ export default async function AdminOverview() {
         <div className="mt-4 card divide-y divide-[var(--color-line)]">
           {recent.length === 0 ? (
             <div className="p-10 text-center text-[var(--color-muted)]">
-              No inquiries yet.
+              No enquiries yet.
             </div>
           ) : (
             recent.map((r) => (

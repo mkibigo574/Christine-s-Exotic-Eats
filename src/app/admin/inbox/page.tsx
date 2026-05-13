@@ -72,12 +72,12 @@ export default async function InboxPage({
     <div>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="text-overline">Inquiries</div>
+          <div className="text-overline">Enquiries</div>
           <h1 className="font-display text-4xl md:text-5xl text-[var(--color-wine-deep)] mt-2 leading-none">
             Inbox
           </h1>
           <p className="mt-3 text-sm text-[var(--color-muted)] max-w-md">
-            Open an inquiry to read details and reply by email.
+            Open an enquiry to read details and reply by email.
           </p>
         </div>
       </header>
@@ -110,7 +110,7 @@ export default async function InboxPage({
       <div className="mt-6 card overflow-hidden divide-y divide-[var(--color-line)]">
         {rows.length === 0 ? (
           <div className="p-10 text-center text-[var(--color-muted)]">
-            No inquiries here.
+            No enquiries here.
           </div>
         ) : (
           rows.map((r) => {

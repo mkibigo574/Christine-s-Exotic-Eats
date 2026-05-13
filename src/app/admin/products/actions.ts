@@ -126,7 +126,7 @@ export async function createProduct(formData: FormData) {
   }
 
   revalidatePath("/admin/products");
-  revalidatePath("/catalogue");
+  revalidatePath("/catalogue", "layout");
   revalidatePath("/");
   redirect("/admin/products");
 }
@@ -193,7 +193,7 @@ export async function updateProduct(productId: string, formData: FormData) {
   }
 
   revalidatePath("/admin/products");
-  revalidatePath("/catalogue");
+  revalidatePath("/catalogue", "layout");
   revalidatePath("/");
   redirect("/admin/products");
 }
@@ -209,6 +209,6 @@ export async function deleteProduct(productId: string) {
   if (error) throw new Error(error.message);
   if (existing?.image_path) await deleteStoredImage(existing.image_path);
   revalidatePath("/admin/products");
-  revalidatePath("/catalogue");
+  revalidatePath("/catalogue", "layout");
   revalidatePath("/");
 }

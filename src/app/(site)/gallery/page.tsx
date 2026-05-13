@@ -4,7 +4,7 @@ import { Ornament } from "@/components/Ornament";
 import { GALLERY_MESHES } from "@/lib/theme";
 import { getGallery } from "@/lib/content";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export const metadata: Metadata = {
   title: "Gallery",
