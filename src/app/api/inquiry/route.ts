@@ -71,12 +71,18 @@ export async function POST(req: Request) {
       console.error("[inquiry] min_qty lookup failed", sizesError);
       return NextResponse.json({ error: "Could not validate order" }, { status: 500 });
     }
+    type SizeRow = {
+      label: string;
+      min_qty: number | null;
+      cee_products: { slug: string } | { slug: string }[] | null;
+    };
     const minMap = new Map<string, number>();
-    for (const row of sizesData ?? []) {
-      const slug = (row as { cee_products: { slug: string } }).cee_products.slug;
-      const label = (row as { label: string }).label;
-      const min = (row as { min_qty: number | null }).min_qty;
-      if (min && min > 1) minMap.set(`${slug}::${label}`, min);
+    for (const row of (sizesData ?? []) as unknown as SizeRow[]) {
+      const product = Array.isArray(row.cee_products) ? row.cee_products[0] : row.cee_products;
+      if (!product) continue;
+      if (row.min_qty && row.min_qty > 1) {
+        minMap.set(`${product.slug}::${row.label}`, row.min_qty);
+      }
     }
     const violations: string[] = [];
     for (const it of items) {
