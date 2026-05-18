@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { DELIVERY } from "@/lib/content-types";
 import { sendReply } from "../actions";
 import { InquiryActionsBar } from "./InquiryActionsBar";
 import { ReplyForm } from "./ReplyForm";
@@ -44,6 +45,14 @@ export default async function InquiryDetailPage({
 
   const items = (data.items as InquiryItem[]) ?? [];
   const replyAction = sendReply.bind(null, id);
+
+  const subtotalExGst = Number(data.subtotal_ex_gst ?? 0);
+  const deliveryFee =
+    DELIVERY.find((d) => d.zone === data.delivery)?.fee ?? 0;
+  const subtotalWithDelivery = subtotalExGst + deliveryFee;
+  const gstAmount = Math.round(subtotalWithDelivery * 10) / 100;
+  const totalIncGst =
+    Math.round((subtotalWithDelivery + gstAmount) * 100) / 100;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
@@ -114,10 +123,37 @@ export default async function InquiryDetailPage({
               <tfoot>
                 <tr>
                   <td colSpan={4} className="pt-3 text-right text-overline">
-                    Subtotal (ex GST)
+                    Subtotal (food, ex GST)
                   </td>
                   <td className="pt-3 text-right font-display text-lg">
-                    ${Number(data.subtotal_ex_gst).toFixed(2)}
+                    ${subtotalExGst.toFixed(2)}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={4} className="pt-1 text-right text-overline">
+                    Delivery{data.delivery ? ` — ${data.delivery}` : ""}
+                  </td>
+                  <td className="pt-1 text-right">
+                    ${deliveryFee.toFixed(2)}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={4} className="pt-1 text-right text-overline">
+                    GST (10%)
+                  </td>
+                  <td className="pt-1 text-right">
+                    ${gstAmount.toFixed(2)}
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="pt-3 text-right text-overline border-t border-[var(--color-line)]"
+                  >
+                    Total incl. GST
+                  </td>
+                  <td className="pt-3 text-right font-display text-lg text-[var(--color-wine-deep)] border-t border-[var(--color-line)]">
+                    ${totalIncGst.toFixed(2)}
                   </td>
                 </tr>
               </tfoot>

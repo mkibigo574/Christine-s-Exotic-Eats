@@ -26,6 +26,7 @@ export function InquiryForm({
   const initialBox = params.get("box");
 
   const [selection, setSelection] = useState<Selection>({});
+  const [deliveryZone, setDeliveryZone] = useState<string>("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +51,14 @@ export function InquiryForm({
     }
     return total;
   }, [selection, categories]);
+
+  const deliveryFee = useMemo(
+    () => delivery.find((d) => d.zone === deliveryZone)?.fee ?? 0,
+    [delivery, deliveryZone],
+  );
+  const subtotalWithDelivery = subtotal + deliveryFee;
+  const gst = Math.round(subtotalWithDelivery * 10) / 100;
+  const totalIncGst = Math.round((subtotalWithDelivery + gst) * 100) / 100;
 
   function setQty(slug: string, label: string, qty: number) {
     setSelection((prev) => {
@@ -117,6 +126,9 @@ export function InquiryForm({
       website: data.get("website"),
       items,
       subtotalExGst: subtotal,
+      deliveryFee,
+      gst,
+      totalIncGst,
     };
 
     try {
@@ -132,6 +144,7 @@ export function InquiryForm({
       setStatus("success");
       form.reset();
       setSelection({});
+      setDeliveryZone("");
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -172,7 +185,7 @@ export function InquiryForm({
         <div className="grid gap-5 md:grid-cols-2">
           <Field label="Full name" name="name" required />
           <Field label="Email" name="email" type="email" required />
-          <Field label="Phone" name="phone" type="tel" />
+          <Field label="Phone" name="phone" type="tel" required />
           <Field label="Event date" name="eventDate" type="date" required />
         </div>
       </Section>
@@ -185,26 +198,13 @@ export function InquiryForm({
             placeholder="e.g. Birthday, Wedding, Corporate lunch"
           />
           <Field label="Approx. guest count" name="guests" type="number" min="1" />
-          <SelectField label="Delivery / pick-up" name="delivery" required>
-            <option value="">Select an option…</option>
-            {delivery.map((d) => (
-              <option key={d.zone} value={d.zone}>
-                {d.zone}
-                {d.fee > 0 ? ` · $${d.fee} delivery` : " · Free"}
-              </option>
-            ))}
-          </SelectField>
           <Field
-            label="Delivery / pick-up time"
+            label="Pick-up / delivery time"
             name="deliveryTime"
             type="time"
+            required
           />
         </div>
-        <Field
-          label="Delivery address (if applicable)"
-          name="address"
-          placeholder="Street, suburb, postcode"
-        />
       </Section>
 
       <Section title="What would you like?" subtitle="Pick any combination — leave quantities at zero for items you don't want. Custom orders can be described in the notes below.">
@@ -267,16 +267,61 @@ export function InquiryForm({
           ))}
         </div>
         {subtotal > 0 ? (
-          <div className="rounded-2xl bg-[linear-gradient(140deg,rgba(184,138,62,0.18),rgba(247,241,230,0.6))] border border-[var(--color-line)] px-6 py-5 flex items-center justify-between">
-            <div>
-              <div className="text-overline">Indicative subtotal</div>
-              <div className="text-xs text-[var(--color-muted)] mt-0.5">
-                Excl. GST &amp; delivery
+          <div className="grid gap-5">
+            <div className="grid gap-5 md:grid-cols-2">
+              <SelectField
+                label="Delivery / pick-up"
+                name="delivery"
+                required
+                value={deliveryZone}
+                onChange={setDeliveryZone}
+              >
+                <option value="">Select an option…</option>
+                {delivery.map((d) => (
+                  <option key={d.zone} value={d.zone}>
+                    {d.zone}
+                    {d.fee > 0 ? ` · $${d.fee} delivery` : " · Free"}
+                  </option>
+                ))}
+              </SelectField>
+              <Field
+                label="Delivery address (if applicable)"
+                name="address"
+                placeholder="Street, suburb, postcode"
+              />
+            </div>
+            <div className="rounded-2xl bg-[linear-gradient(140deg,rgba(184,138,62,0.18),rgba(247,241,230,0.6))] border border-[var(--color-line)] px-6 py-5">
+              <div className="text-overline">Indicative total</div>
+              <dl className="mt-4 grid gap-2 text-sm text-[var(--color-ink)]">
+                <SummaryRow label="Subtotal (food)" value={formatPrice(subtotal)} />
+                <SummaryRow
+                  label={
+                    deliveryZone
+                      ? `Delivery — ${deliveryZone}`
+                      : "Delivery / pick-up"
+                  }
+                  value={
+                    deliveryZone
+                      ? deliveryFee > 0
+                        ? formatPrice(deliveryFee)
+                        : "Free"
+                      : "—"
+                  }
+                />
+                <SummaryRow label="GST (10%)" value={formatPrice(gst)} />
+              </dl>
+              <div className="mt-4 pt-4 border-t border-[var(--color-line)] flex items-center justify-between">
+                <div>
+                  <div className="text-overline">Total incl. GST</div>
+                  <div className="text-xs text-[var(--color-muted)] mt-0.5">
+                    Indicative — confirmed on quote.
+                  </div>
+                </div>
+                <span className="font-display text-3xl text-[var(--color-wine-deep)]">
+                  {formatPrice(totalIncGst)}
+                </span>
               </div>
             </div>
-            <span className="font-display text-3xl text-[var(--color-wine-deep)]">
-              {formatPrice(subtotal)}
-            </span>
           </div>
         ) : null}
       </Section>
@@ -379,11 +424,15 @@ function SelectField({
   label,
   name,
   required = false,
+  value,
+  onChange,
   children,
 }: {
   label: string;
   name: string;
   required?: boolean;
+  value?: string;
+  onChange?: (v: string) => void;
   children: React.ReactNode;
 }) {
   return (
@@ -392,10 +441,28 @@ function SelectField({
         {label}
         {required ? <span className="text-[var(--color-wine)]"> *</span> : null}
       </span>
-      <select name={name} required={required} defaultValue="" className="input">
+      <select
+        name={name}
+        required={required}
+        className="input"
+        {...(onChange
+          ? { value: value ?? "", onChange: (e) => onChange(e.target.value) }
+          : { defaultValue: "" })}
+      >
         {children}
       </select>
     </label>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <dt className="text-[var(--color-ink-soft)]">{label}</dt>
+      <dd className="font-display tabular-nums text-[var(--color-wine-dark)]">
+        {value}
+      </dd>
+    </div>
   );
 }
 

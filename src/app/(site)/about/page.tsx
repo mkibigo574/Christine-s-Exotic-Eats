@@ -5,7 +5,7 @@ import { Ornament, Mark } from "@/components/Ornament";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Christine's Exotic Eats is a Darwin based, family owned & operated, small catering business, established in December 2021.",
+    "Christine's Exotic Eats is a Darwin based, family owned & operated, small catering business, established in December 2018.",
 };
 
 export default function AboutPage() {
@@ -28,7 +28,7 @@ export default function AboutPage() {
           <p>
             Christine&rsquo;s Exotic Eats is a Darwin based, family owned &amp;
             operated, small catering business, servicing both private and
-            corporate clients. Established in December 2021, our small business has
+            corporate clients. Established in December 2018, our small business has
             seen significant growth over the years and endeavours to continue
             thriving and serving the amazing Darwin community.
           </p>

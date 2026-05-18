@@ -32,7 +32,7 @@ function Hero() {
           <div className="flex items-center gap-3 text-[var(--color-gold-light)]">
             <Mark />
             <span className="text-overline !text-[var(--color-gold-light)]">
-              Darwin · Est. 2021
+              Darwin · Est. 2018
             </span>
           </div>
           <h1 className="mt-5 md:mt-6 font-display heading-xl font-semibold text-[var(--color-cream-soft)]">
@@ -58,7 +58,7 @@ function Hero() {
           </div>
 
           <div className="mt-9 md:mt-12 grid grid-cols-3 gap-4 md:flex md:flex-wrap md:items-center md:gap-x-10 md:gap-y-4">
-            <Stat label="Years catering Darwin" value="4+" />
+            <Stat label="Years catering Darwin" value="7+" />
             <Stat label="Box varieties" value="10" />
             <Stat label="Largest box serves" value="20" />
           </div>

@@ -19,7 +19,7 @@ export function Footer() {
               className="h-16 md:h-20 w-auto select-none"
             />
             <p className="mt-5 text-sm text-[var(--color-muted)] max-w-sm leading-relaxed">
-              Family-run catering in Darwin since December 2021. Fresh, locally sourced
+              Family-run catering in Darwin since December 2018. Fresh, locally sourced
               ingredients, cooked with love — for events large and small.
             </p>
           </div>
