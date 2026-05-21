@@ -9,9 +9,20 @@ type Props = {
   submitLabel: string;
 };
 
+type SizeImageState = {
+  preview: string | null;
+  remove: boolean;
+};
+
 export function ProductForm({ action, initial, submitLabel }: Props) {
   const [sizes, setSizes] = useState<Size[]>(
     initial?.sizes ?? [{ label: "", price: 0 }],
+  );
+  const [sizeImages, setSizeImages] = useState<SizeImageState[]>(
+    (initial?.sizes ?? [{ label: "", price: 0 }]).map((s) => ({
+      preview: s.image_url ?? null,
+      remove: false,
+    })),
   );
   const [preview, setPreview] = useState<string | null>(initial?.image_url ?? null);
   const [removeImage, setRemoveImage] = useState(false);
@@ -22,9 +33,31 @@ export function ProductForm({ action, initial, submitLabel }: Props) {
   }
   function add() {
     setSizes((arr) => [...arr, { label: "", price: 0 }]);
+    setSizeImages((arr) => [...arr, { preview: null, remove: false }]);
   }
   function remove(i: number) {
     setSizes((arr) => arr.filter((_, idx) => idx !== i));
+    setSizeImages((arr) => arr.filter((_, idx) => idx !== i));
+  }
+  function pickSizeImage(i: number, file: File | null) {
+    if (!file) return;
+    setSizeImages((arr) =>
+      arr.map((s, idx) =>
+        idx === i ? { preview: URL.createObjectURL(file), remove: false } : s,
+      ),
+    );
+  }
+  function toggleRemoveSizeImage(i: number, removeIt: boolean) {
+    setSizeImages((arr) =>
+      arr.map((s, idx) => {
+        if (idx !== i) return s;
+        const original = sizes[idx]?.image_url ?? null;
+        return {
+          preview: removeIt ? null : original,
+          remove: removeIt,
+        };
+      }),
+    );
   }
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
@@ -123,29 +156,86 @@ export function ProductForm({ action, initial, submitLabel }: Props) {
           </button>
         </div>
         <p className="mt-1 text-xs text-[var(--color-muted)]">
-          Prices are exclusive of GST.
+          Prices are exclusive of GST. Add a per-piece minimum (e.g. 30) when an item is only sold in batches.
         </p>
 
-        <div className="mt-4 grid gap-3">
-          {sizes.map((s, i) => (
-            <div
-              key={i}
-              className="grid gap-2 md:grid-cols-[1.2fr_0.8fr_0.8fr_2fr_auto] items-end rounded-2xl border border-[var(--color-line)] bg-[var(--color-cream-soft)] p-3"
-            >
-              <input type="hidden" name="size_id[]" value={s.id ?? ""} />
-              <SubField label="Label" name="size_label[]" value={s.label} onChange={(v) => update(i, "label", v)} required />
-              <SubField label="Price" name="size_price[]" type="number" step="0.01" value={String(s.price ?? 0)} onChange={(v) => update(i, "price", Number(v))} required />
-              <SubField label="Unit" name="size_unit[]" value={s.unit ?? ""} placeholder="e.g. each" onChange={(v) => update(i, "unit", v)} />
-              <SubField label="Notes" name="size_notes[]" value={s.notes ?? ""} onChange={(v) => update(i, "notes", v)} />
-              <button
-                type="button"
-                onClick={() => remove(i)}
-                className="text-xs text-red-700 hover:underline self-center pb-1"
+        <div className="mt-4 grid gap-4">
+          {sizes.map((s, i) => {
+            const img = sizeImages[i] ?? { preview: null, remove: false };
+            const hasExistingImage = Boolean(s.image_url);
+            return (
+              <div
+                key={i}
+                className="grid gap-3 rounded-2xl border border-[var(--color-line)] bg-[var(--color-cream-soft)] p-4"
               >
-                Remove
-              </button>
-            </div>
-          ))}
+                <input type="hidden" name="size_id[]" value={s.id ?? ""} />
+                <input type="hidden" name="size_existing_image[]" value={s.image_path ?? ""} />
+                <input type="hidden" name="size_remove_image[]" value={img.remove ? "1" : ""} />
+
+                <div className="grid gap-2 md:grid-cols-[1.2fr_0.8fr_0.8fr_0.7fr_auto] items-end">
+                  <SubField label="Label" name="size_label[]" value={s.label} onChange={(v) => update(i, "label", v)} required />
+                  <SubField label="Price" name="size_price[]" type="number" step="0.01" value={String(s.price ?? 0)} onChange={(v) => update(i, "price", Number(v))} required />
+                  <SubField label="Unit" name="size_unit[]" value={s.unit ?? ""} placeholder="e.g. each" onChange={(v) => update(i, "unit", v)} />
+                  <SubField label="Min qty" name="size_min_qty[]" type="number" step="1" value={s.min_qty ? String(s.min_qty) : ""} placeholder="optional" onChange={(v) => update(i, "min_qty", v === "" ? 0 : Number(v))} />
+                  <button
+                    type="button"
+                    onClick={() => remove(i)}
+                    className="text-xs text-red-700 hover:underline self-center pb-1"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <div className="grid gap-2 md:grid-cols-2">
+                  <SubField label="Serves" name="size_serves[]" value={s.serves ?? ""} placeholder="e.g. 8–10 people" onChange={(v) => update(i, "serves", v)} />
+                  <SubField label="Notes" name="size_notes[]" value={s.notes ?? ""} onChange={(v) => update(i, "notes", v)} />
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-[140px_1fr] items-start pt-1">
+                  <div className="aspect-[4/3] w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-paper)] overflow-hidden grid place-items-center">
+                    {img.preview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={img.preview} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--color-muted)] text-center px-2">
+                        No photo
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid gap-2">
+                    <label className="grid gap-1">
+                      <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--color-muted)]">Photo for this size</span>
+                      <input
+                        type="file"
+                        name="size_image[]"
+                        accept="image/jpeg,image/png,image/webp,image/avif"
+                        onChange={(e) => pickSizeImage(i, e.target.files?.[0] ?? null)}
+                        className="block text-xs file:mr-3 file:rounded-full file:border file:border-[var(--color-line)] file:bg-[var(--color-paper)] file:px-3 file:py-1.5 file:text-[10px] file:uppercase file:tracking-[0.18em] file:text-[var(--color-wine-dark)] hover:file:bg-[var(--color-cream-dark)]/40"
+                      />
+                    </label>
+                    <SubField
+                      label="Image alt text"
+                      name="size_image_alt[]"
+                      value={s.image_alt ?? ""}
+                      placeholder="What's in the photo (for accessibility)."
+                      onChange={(v) => update(i, "image_alt", v)}
+                    />
+                    {hasExistingImage ? (
+                      <label className="inline-flex items-center gap-2 text-xs">
+                        <input
+                          type="checkbox"
+                          checked={img.remove}
+                          onChange={(e) => toggleRemoveSizeImage(i, e.target.checked)}
+                          className="h-4 w-4"
+                        />
+                        <span>Remove current photo</span>
+                      </label>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

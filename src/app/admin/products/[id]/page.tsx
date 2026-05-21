@@ -17,7 +17,7 @@ export default async function EditProductPage({
   const { data } = await supabase
     .from("cee_products")
     .select(
-      "id, slug, name, blurb, notes, is_active, sort_order, image_path, image_alt, cee_product_sizes(id, label, price, unit, serves, notes, sort_order)",
+      "id, slug, name, blurb, notes, is_active, sort_order, image_path, image_alt, cee_product_sizes(id, label, price, unit, serves, notes, sort_order, image_path, image_alt, min_qty)",
     )
     .eq("id", id)
     .single();
@@ -49,6 +49,12 @@ export default async function EditProductPage({
         serves: s.serves,
         notes: s.notes,
         sort_order: s.sort_order,
+        image_path: s.image_path,
+        image_alt: s.image_alt,
+        image_url: s.image_path
+          ? supabase.storage.from(GALLERY_BUCKET).getPublicUrl(s.image_path).data.publicUrl
+          : null,
+        min_qty: s.min_qty,
       })),
   };
 
