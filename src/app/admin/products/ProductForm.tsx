@@ -300,7 +300,10 @@ function SubField({
 }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--color-muted)]">{label}</span>
+      <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--color-muted)]">
+        {label}
+        {required ? <span className="text-[var(--color-wine)]"> *</span> : null}
+      </span>
       <input
         name={name}
         type={type}
