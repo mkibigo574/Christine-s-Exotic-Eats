@@ -120,7 +120,8 @@ export default async function CategoryDetailPage({
         ) : (
           <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {cat.sizes.map((size) => {
-              const serves = feedingFor(size.label);
+              const isPerPiece = (size.unit ?? "").trim().toLowerCase() === "each";
+              const serves = isPerPiece ? null : feedingFor(size.label);
               return (
                 <article
                   key={size.id ?? size.label}

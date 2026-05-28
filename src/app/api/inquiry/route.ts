@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 type InquiryItem = {
   slug: string;
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Please enter a valid email address" }, { status: 400 });
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
 
   const items = (payload.items ?? []).filter((it) => it && it.qty > 0);
   if (items.length > 0) {
