@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import type { Category, Size } from "@/lib/content-types";
+import type { ProductFormState } from "./actions";
+import { downscaleImageInput } from "@/lib/downscale-image";
 
 type Props = {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (state: ProductFormState, formData: FormData) => Promise<ProductFormState>;
   initial?: Category;
   submitLabel: string;
 };
@@ -15,6 +17,7 @@ type SizeImageState = {
 };
 
 export function ProductForm({ action, initial, submitLabel }: Props) {
+  const [state, formAction, pending] = useActionState(action, null);
   const [sizes, setSizes] = useState<Size[]>(
     initial?.sizes ?? [{ label: "", price: 0 }],
   );
@@ -39,11 +42,13 @@ export function ProductForm({ action, initial, submitLabel }: Props) {
     setSizes((arr) => arr.filter((_, idx) => idx !== i));
     setSizeImages((arr) => arr.filter((_, idx) => idx !== i));
   }
-  function pickSizeImage(i: number, file: File | null) {
+  async function pickSizeImage(i: number, input: HTMLInputElement) {
+    const file = input.files?.[0];
     if (!file) return;
+    const scaled = await downscaleImageInput(input, file);
     setSizeImages((arr) =>
       arr.map((s, idx) =>
-        idx === i ? { preview: URL.createObjectURL(file), remove: false } : s,
+        idx === i ? { preview: URL.createObjectURL(scaled), remove: false } : s,
       ),
     );
   }
@@ -60,15 +65,17 @@ export function ProductForm({ action, initial, submitLabel }: Props) {
     );
   }
 
-  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const input = e.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
+    const scaled = await downscaleImageInput(input, file);
     setRemoveImage(false);
-    setPreview(URL.createObjectURL(file));
+    setPreview(URL.createObjectURL(scaled));
   }
 
   return (
-    <form action={action} encType="multipart/form-data" className="grid gap-6">
+    <form action={formAction} className="grid gap-6">
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Name" name="name" defaultValue={initial?.name} required />
         <Field label="Slug (URL part)" name="slug" defaultValue={initial?.slug} placeholder="auto from name" />
@@ -209,7 +216,7 @@ export function ProductForm({ action, initial, submitLabel }: Props) {
                         type="file"
                         name="size_image[]"
                         accept="image/jpeg,image/png,image/webp,image/avif"
-                        onChange={(e) => pickSizeImage(i, e.target.files?.[0] ?? null)}
+                        onChange={(e) => pickSizeImage(i, e.currentTarget)}
                         className="block text-xs file:mr-3 file:rounded-full file:border file:border-[var(--color-line)] file:bg-[var(--color-paper)] file:px-3 file:py-1.5 file:text-[10px] file:uppercase file:tracking-[0.18em] file:text-[var(--color-wine-dark)] hover:file:bg-[var(--color-cream-dark)]/40"
                       />
                     </label>
@@ -239,8 +246,16 @@ export function ProductForm({ action, initial, submitLabel }: Props) {
         </div>
       </div>
 
+      {state?.error ? (
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          {state.error}
+        </p>
+      ) : null}
+
       <div className="pt-2">
-        <button type="submit" className="btn-primary">{submitLabel}</button>
+        <button type="submit" disabled={pending} className="btn-primary disabled:opacity-60">
+          {pending ? "Saving…" : submitLabel}
+        </button>
       </div>
     </form>
   );

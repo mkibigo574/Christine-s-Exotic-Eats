@@ -15,8 +15,14 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "12mb",
+      bodySizeLimit: "25mb",
     },
+    // The proxy (middleware) buffers request bodies for every matched route,
+    // capped at 10MB by default. Admin product uploads POST image files through
+    // it, so a large photo would be truncated and fail multipart parsing. Raise
+    // the cap to match the server-action limit. Images are also downscaled in
+    // the browser before upload, so payloads normally stay well under this.
+    proxyClientMaxBodySize: "25mb",
   },
 };
 
