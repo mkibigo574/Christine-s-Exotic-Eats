@@ -46,9 +46,13 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-[var(--color-line)]">
-          <div className="mx-auto max-w-6xl px-5 sm:px-6 py-5 text-xs text-[var(--color-muted)] flex flex-wrap justify-between gap-2">
+          <div className="mx-auto max-w-6xl px-5 sm:px-6 py-5 text-xs text-[var(--color-muted)] flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <span>© {new Date().getFullYear()} Christine&rsquo;s Exotic Eats. All rights reserved.</span>
-            <span>Prices exclude GST unless stated.</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Link href="/privacy" className="hover:text-[var(--color-wine)] transition">Privacy</Link>
+              <Link href="/terms" className="hover:text-[var(--color-wine)] transition">Terms</Link>
+              <span>Prices exclude GST unless stated.</span>
+            </div>
           </div>
         </div>
       </div>

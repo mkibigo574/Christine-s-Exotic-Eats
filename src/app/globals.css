@@ -114,6 +114,28 @@
     height: 1px;
   }
 
+  .legal-prose {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--color-ink);
+  }
+  .legal-prose p { margin-top: 1rem; }
+  .legal-prose p:first-child { margin-top: 0; }
+  .legal-prose ul {
+    margin-top: 1rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+  .legal-prose li { margin-top: 0.4rem; }
+  .legal-prose a {
+    color: var(--color-wine);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .legal-prose a:hover { color: var(--color-wine-deep); }
+  .legal-prose em { font-style: italic; color: var(--color-wine); }
+
   .nav-link {
     position: relative;
     color: var(--color-ink);
