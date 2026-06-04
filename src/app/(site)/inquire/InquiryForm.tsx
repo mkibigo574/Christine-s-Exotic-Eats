@@ -2,8 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Script from "next/script";
 import { formatPrice, type Category } from "@/lib/content-types";
 import { Mark } from "@/components/Ornament";
+
+// Public site key for Cloudflare Turnstile. When unset (e.g. local dev) the
+// widget is hidden and the server skips verification, so the two stay in sync.
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+declare global {
+  interface Window {
+    turnstile?: { reset: (widget?: string) => void };
+  }
+}
 
 type DeliveryOption = { zone: string; fee: number };
 
@@ -124,6 +135,7 @@ export function InquiryForm({
       address: data.get("address"),
       notes: data.get("notes"),
       website: data.get("website"),
+      turnstileToken: data.get("cf-turnstile-response"),
       items,
       subtotalExGst: subtotal,
       deliveryFee,
@@ -143,6 +155,7 @@ export function InquiryForm({
       }
       setStatus("success");
       form.reset();
+      window.turnstile?.reset();
       setSelection({});
       setDeliveryZone("");
     } catch (err) {
@@ -339,6 +352,18 @@ export function InquiryForm({
         <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
           {error} — please try again or contact us via social media.
         </p>
+      ) : null}
+
+      {TURNSTILE_SITE_KEY ? (
+        <>
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+            strategy="afterInteractive"
+          />
+          {/* Turnstile injects a hidden `cf-turnstile-response` input into the
+              form, which we read in handleSubmit and verify server-side. */}
+          <div className="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-theme="light" />
+        </>
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4 pt-4">
